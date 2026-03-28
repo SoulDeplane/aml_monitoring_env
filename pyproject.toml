@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openenv-aml-monitoring-env"
+version = "0.1.0"
+description = "Anti-Money Laundering Transaction Monitoring Environment for OpenEnv"
+requires-python = ">=3.10"
+dependencies = [
+    "openenv-core[core]>=0.2.2",
+    "fastapi>=0.115.0",
+    "pydantic>=2.0.0",
+    "uvicorn>=0.24.0",
+    "requests>=2.31.0",
+    "openai>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.0.0",
+]
+
+[project.scripts]
+server = "aml_monitoring_env.server.app:main"
+
+[tool.setuptools]
+include-package-data = true
+packages = [
+    "aml_monitoring_env",
+    "aml_monitoring_env.server",
+    "aml_monitoring_env.data",
+    "aml_monitoring_env.tasks",
+    "aml_monitoring_env.graders",
+]
+package-dir = {"aml_monitoring_env" = ".", "aml_monitoring_env.server" = "server", "aml_monitoring_env.data" = "data", "aml_monitoring_env.tasks" = "tasks", "aml_monitoring_env.graders" = "graders"}
