@@ -1,4 +1,12 @@
-# 🏦 AML Transaction Monitoring Environment
+---
+title: AML Monitoring Env
+emoji: 🚔
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 8000
+---
+# AML Transaction Monitoring Environment
 
 An OpenEnv environment that simulates **Anti-Money Laundering (AML) transaction monitoring** — a regulatory requirement for every financial institution worldwide.
 

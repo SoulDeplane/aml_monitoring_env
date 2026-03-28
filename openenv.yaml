@@ -4,3 +4,6 @@ type: space
 runtime: fastapi
 app: server.app:app
 port: 8000
+color_from: blue
+color_to: indigo
+emoji: 🚔
