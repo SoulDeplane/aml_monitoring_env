@@ -1,7 +1,13 @@
 __pycache__
 *.pyc
+*.pyo
 .git
 .env
-outputs/
-*.egg-info
+.env.example
+.gitignore
 .pytest_cache
+*.egg-info
+outputs/
+*.log
+.DS_Store
+README.md

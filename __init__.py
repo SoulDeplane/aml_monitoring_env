@@ -1,10 +1,8 @@
 """
 AML Transaction Monitoring Environment for OpenEnv.
-
 A real-world environment where an AI agent monitors financial transactions
 to detect money laundering patterns including structuring, layering,
 round-tripping, and suspicious network activity.
-
 MCP Tools available:
 - review_transactions: Get transaction history for an account
 - check_customer_profile: Review KYC/customer info and risk profile
@@ -16,8 +14,6 @@ MCP Tools available:
 """
 
 from openenv.core.env_server.mcp_types import CallToolAction, ListToolsAction
-
 from .client import AMLMonitoringEnv
 
 __all__ = ["AMLMonitoringEnv", "CallToolAction", "ListToolsAction"]
-
