@@ -1,28 +1,20 @@
 """FastAPI application for the AML Monitoring environment."""
 
 try:
-
     from openenv.core.env_server.http_server import create_app
-
-    from openenv.core.env_server.mcp_types import CallToolAction, CallToolObservation
-
+    from openenv.core.env_server.types import Action, Observation
     from .environment import AMLMonitoringEnvironment
-
 except ImportError:
-
     from openenv.core.env_server.http_server import create_app
-
-    from openenv.core.env_server.mcp_types import CallToolAction, CallToolObservation
-
+    from openenv.core.env_server.types import Action, Observation
     from server.environment import AMLMonitoringEnvironment
 
 app = create_app(
 
     AMLMonitoringEnvironment,
 
-    CallToolAction,
-
-    CallToolObservation,
+    Action,
+    Observation,
 
     env_name="aml_monitoring_env",
 
