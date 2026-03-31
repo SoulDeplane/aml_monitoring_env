@@ -30,8 +30,14 @@ Transaction Report (CTR) threshold.
 """
 
 TASK_CONFIG = {
+
     "task_id": "easy",
+
     "max_steps": 50,
+
     "optimal_steps": 10,
+
     "description": TASK_DESCRIPTION,
+
 }
+

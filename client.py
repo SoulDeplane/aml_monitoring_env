@@ -2,8 +2,8 @@
 
 from openenv.core.mcp_client import MCPToolClient
 
-
 class AMLMonitoringEnv(MCPToolClient):
+
     """Client for connecting to a remote AML Monitoring environment.
 
     Example (async):
@@ -14,3 +14,4 @@ class AMLMonitoringEnv(MCPToolClient):
     """
 
     pass
+

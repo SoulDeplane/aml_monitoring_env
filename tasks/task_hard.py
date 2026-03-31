@@ -49,8 +49,14 @@ ACC-0013, ACC-0015, ACC-0018
 """
 
 TASK_CONFIG = {
+
     "task_id": "hard",
+
     "max_steps": 200,
+
     "optimal_steps": 35,
+
     "description": TASK_DESCRIPTION,
+
 }
+

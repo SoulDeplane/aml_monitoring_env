@@ -38,8 +38,14 @@ or legitimate. For suspicious accounts, identify the specific pattern(s).
 """
 
 TASK_CONFIG = {
+
     "task_id": "medium",
+
     "max_steps": 100,
+
     "optimal_steps": 20,
+
     "description": TASK_DESCRIPTION,
+
 }
+
