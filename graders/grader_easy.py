@@ -19,45 +19,83 @@ def grade_easy(
     total_steps: int,
 ) -> Dict[str, Any]:
     """Grade an easy AML task episode."""
+
     expected = scenario["expected"]
-    # True positive detection: did agent flag the right accounts?
+
     expected_suspicious = {k for k, v in expected.items() if v["suspicious"]}
-    flagged_accounts = {f.get("account_id", "") for f in flags} | {s.get("account_id", "") for s in sars}
+
+    flagged_accounts = {f.get("account_id", "") for f in flags} | {
+        s.get("account_id", "") for s in sars
+    }
+
     correct_flags = flagged_accounts & expected_suspicious
-    tp_score = len(correct_flags) / len(expected_suspicious) if expected_suspicious else 0.0
-    # Pattern identification: did agent identify the correct pattern type?
+
+    tp_score = (
+        len(correct_flags) / len(expected_suspicious) if expected_suspicious else 0.0
+    )
+
     pattern_score = 0.0
+
     pattern_checks = 0
+
     pattern_correct = 0
+
     for flag in flags + sars:
+
         acc_id = flag.get("account_id", "")
+
         if acc_id in expected and expected[acc_id]["suspicious"]:
+
             pattern_checks += 1
+
             detected = set(flag.get("patterns", []))
+
             expected_patterns = set(expected[acc_id]["patterns"])
+
             if detected & expected_patterns:
+
                 pattern_correct += 1
+
     if pattern_checks > 0:
+
         pattern_score = pattern_correct / pattern_checks
-    # False positive avoidance: did agent avoid flagging clean accounts?
+
     fp_score = 1.0
+
     expected_clean = {k for k, v in expected.items() if not v["suspicious"]}
+
     false_flags = flagged_accounts & expected_clean
+
     if expected_clean:
+
         fp_score = 1.0 - (len(false_flags) / len(expected_clean))
-    # Evidence quality: did agent actually investigate before deciding?
+
     evidence_score = 0.0
-    evidence_actions = [a for a in investigation_log if a.get("tool") in ("review_transactions", "check_customer_profile")]
+
+    evidence_actions = [
+        a
+        for a in investigation_log
+        if a.get("tool") in ("review_transactions", "check_customer_profile")
+    ]
+
     reviewed = {a.get("account_id") for a in evidence_actions}
+
     review_accounts = set(scenario["review_accounts"])
+
     if review_accounts:
+
         evidence_score = len(reviewed & review_accounts) / len(review_accounts)
-    # Efficiency: completed within reasonable step count?
+
     optimal = scenario["optimal_steps"]
+
     efficiency_score = 1.0
+
     if total_steps > 2 * optimal:
+
         over = total_steps - 2 * optimal
+
         efficiency_score = max(0.0, 1.0 - (over / (2 * optimal)))
+
     overall = (
         tp_score * 0.35
         + pattern_score * 0.20
@@ -65,6 +103,7 @@ def grade_easy(
         + evidence_score * 0.10
         + efficiency_score * 0.10
     )
+
     return {
         "overall_score": round(min(1.0, max(0.0, overall)), 4),
         "breakdown": {

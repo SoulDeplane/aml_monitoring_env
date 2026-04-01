@@ -21,67 +21,128 @@ def grade_hard(
     total_steps: int,
 ) -> Dict[str, Any]:
     """Grade a hard AML task episode."""
+
     expected = scenario["expected"]
+
     network = scenario.get("network", {})
-    # True positive detection
+
     expected_suspicious = {k for k, v in expected.items() if v["suspicious"]}
-    flagged_accounts = {f.get("account_id", "") for f in flags} | {s.get("account_id", "") for s in sars}
+
+    flagged_accounts = {f.get("account_id", "") for f in flags} | {
+        s.get("account_id", "") for s in sars
+    }
+
     correct_flags = flagged_accounts & expected_suspicious
-    tp_score = len(correct_flags) / len(expected_suspicious) if expected_suspicious else 0.0
-    # False positive avoidance
+
+    tp_score = (
+        len(correct_flags) / len(expected_suspicious) if expected_suspicious else 0.0
+    )
+
     expected_clean = {k for k, v in expected.items() if not v["suspicious"]}
+
     false_flags = flagged_accounts & expected_clean
+
     fp_score = 1.0 - (len(false_flags) / len(expected_clean)) if expected_clean else 1.0
-    # Pattern identification accuracy (per-pattern granularity)
+
     pattern_total = 0
+
     pattern_correct = 0
+
     for flag in flags + sars:
+
         acc_id = flag.get("account_id", "")
+
         if acc_id in expected and expected[acc_id]["suspicious"]:
+
             exp_patterns = set(expected[acc_id]["patterns"])
+
             det_patterns = set(flag.get("patterns", []))
+
             pattern_total += len(exp_patterns)
+
             pattern_correct += len(det_patterns & exp_patterns)
+
     pattern_score = pattern_correct / pattern_total if pattern_total > 0 else 0.0
-    # Network analysis: did agent use the network tool on connected accounts?
+
     network_score = 0.0
+
     network_actions = [a for a in investigation_log if a.get("tool") == "get_network"]
+
     network_queried = {a.get("account_id", "") for a in network_actions}
+
     network_accounts = set(network.keys())
+
     if network_accounts:
+
         network_score = len(network_queried & network_accounts) / len(network_accounts)
-        # Bonus for also querying the connected accounts discovered via the network
+
         all_connected = set()
+
         for acc, info in network.items():
+
             all_connected.update(info.get("connected_accounts", []))
+
         connected_queried = network_queried & all_connected
+
         if all_connected:
-            network_score = (network_score + len(connected_queried) / len(all_connected)) / 2
-    # SAR filing accuracy
+
+            network_score = (
+                network_score + len(connected_queried) / len(all_connected)
+            ) / 2
+
     sar_score = 0.0
+
     expected_sars = {k for k, v in expected.items() if v["action"] == "file_sar"}
+
     sar_accounts = {s.get("account_id", "") for s in sars}
+
     if expected_sars:
+
         correct_sars = sar_accounts & expected_sars
+
         false_sars = sar_accounts - expected_sars
+
         sar_score = len(correct_sars) / len(expected_sars)
+
         if false_sars:
+
             sar_score = max(0.0, sar_score - 0.2 * len(false_sars))
-    # Evidence quality: breadth of investigation and tool diversity
-    evidence_tools = {"review_transactions", "check_customer_profile", "analyze_pattern", "get_network"}
+
+    evidence_tools = {
+        "review_transactions",
+        "check_customer_profile",
+        "analyze_pattern",
+        "get_network",
+    }
+
     evidence_actions = [a for a in investigation_log if a.get("tool") in evidence_tools]
+
     reviewed = {a.get("account_id") for a in evidence_actions if a.get("account_id")}
+
     review_accounts = set(scenario["review_accounts"])
-    evidence_score = len(reviewed & review_accounts) / len(review_accounts) if review_accounts else 0.0
+
+    evidence_score = (
+        len(reviewed & review_accounts) / len(review_accounts)
+        if review_accounts
+        else 0.0
+    )
+
     tools_used = {a.get("tool") for a in evidence_actions}
+
     if len(tools_used) >= 3:
+
         evidence_score = min(1.0, evidence_score + 0.1)
-    # Efficiency
+
     optimal = scenario["optimal_steps"]
+
     efficiency_score = 1.0
+
     if total_steps > 2 * optimal:
+
         over = total_steps - 2 * optimal
+
         efficiency_score = max(0.0, 1.0 - (over / (3 * optimal)))
+
     overall = (
         tp_score * 0.20
         + fp_score * 0.15
@@ -91,6 +152,7 @@ def grade_hard(
         + evidence_score * 0.15
         + efficiency_score * 0.10
     )
+
     return {
         "overall_score": round(min(1.0, max(0.0, overall)), 4),
         "breakdown": {
