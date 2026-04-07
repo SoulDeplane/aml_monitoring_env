@@ -49,8 +49,8 @@ Respond with EXACTLY ONE tool call in JSON format:
 {"tool": "tool_name", "args": {"param1": "value1"}}"""
 
 
-def run_task(task_id: str, seed: int = 42) -> dict:
-    """Run a single task and return the grading result."""
+def run_task(task_id: str, seed: int = 42) -> tuple[dict, int]:
+    """Run a single task and return the grading result and steps taken."""
 
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -109,6 +109,8 @@ Begin your investigation. What tool do you want to use first?""",
 
             print(f"  [Step {step}] LLM call failed: {e}")
 
+            print(f"[STEP] step={step} reward=0.0", flush=True)
+
             break
 
         conversation.append({"role": "assistant", "content": assistant_msg})
@@ -124,6 +126,8 @@ Begin your investigation. What tool do you want to use first?""",
                 }
             )
 
+            print(f"[STEP] step={step} reward=0.0", flush=True)
+
             continue
 
         tool_name = tool_call.get("tool", "")
@@ -138,6 +142,10 @@ Begin your investigation. What tool do you want to use first?""",
 
             obs = env.step(action)
 
+            reward = float(getattr(obs, 'reward', 0.0) or 0.0)
+
+            print(f"[STEP] step={step} reward={reward}", flush=True)
+
         except Exception as e:
 
             conversation.append(
@@ -146,6 +154,8 @@ Begin your investigation. What tool do you want to use first?""",
                     "content": f"Tool call failed: {e}. Try a different approach.",
                 }
             )
+
+            print(f"[STEP] step={step} reward=0.0", flush=True)
 
             continue
 
@@ -174,7 +184,7 @@ Begin your investigation. What tool do you want to use first?""",
 
     env.close()
 
-    return grader_result
+    return grader_result, step
 
 
 def _parse_tool_call(text: str) -> dict | None:
@@ -242,11 +252,13 @@ def main():
 
         print(f"--- Task: {task_id.upper()} ---")
 
+        print(f"[START] task={task_id}", flush=True)
+
         start = time.time()
 
         try:
 
-            result = run_task(task_id, seed=42)
+            result, steps = run_task(task_id, seed=42)
 
             elapsed = time.time() - start
 
@@ -259,6 +271,8 @@ def main():
             print(f"  Score: {score:.4f}")
 
             print(f"  Time: {elapsed:.1f}s")
+            
+            print(f"[END] task={task_id} score={score} steps={steps}", flush=True)
 
             if "breakdown" in result:
 
@@ -279,6 +293,8 @@ def main():
             traceback.print_exc()
 
             results[task_id] = {"overall_score": 0.0, "error": str(e)}
+
+            print(f"[END] task={task_id} score=0.0 steps=0", flush=True)
 
             print()
 
